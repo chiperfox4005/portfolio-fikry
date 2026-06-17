@@ -980,16 +980,16 @@
             <a href="#" class="nav-brand">FMP.</a>
             <div class="nav-right">
                 <div class="lang-switcher">
-                    <button class="lang-btn active" onclick="switchLang('id')">ID</button>
-                    <button class="lang-btn" onclick="switchLang('en')">EN</button>
+                    <button class="lang-btn active" id="btn-id" onclick="switchLang('id', this)">ID</button>
+                    <button class="lang-btn" id="btn-en" onclick="switchLang('en', this)">EN</button>
                 </div>
                 <ul class="nav-links" id="navLinks">
-                    <li><a href="#home" class="active" data-lang="id">Beranda</a><a href="#home" class="active" data-lang="en">Home</a></li>
-                    <li><a href="#about" data-lang="id">Tentang</a><a href="#about" data-lang="en">About</a></li>
-                    <li><a href="#skills" data-lang="id">Keahlian</a><a href="#skills" data-lang="en">Skills</a></li>
-                    <li><a href="#technologies" data-lang="id">Teknologi</a><a href="#technologies" data-lang="en">Tech</a></li>
-                    <li><a href="#projects" data-lang="id">Proyek</a><a href="#projects" data-lang="en">Projects</a></li>
-                    <li><a href="#contact" data-lang="id">Kontak</a><a href="#contact" data-lang="en">Contact</a></li>
+                    <li><a href="#home" class="nav-link active" data-lang="id">Beranda</a><a href="#home" class="nav-link" data-lang="en">Home</a></li>
+                    <li><a href="#about" class="nav-link" data-lang="id">Tentang</a><a href="#about" class="nav-link" data-lang="en">About</a></li>
+                    <li><a href="#skills" class="nav-link" data-lang="id">Keahlian</a><a href="#skills" class="nav-link" data-lang="en">Skills</a></li>
+                    <li><a href="#technologies" class="nav-link" data-lang="id">Teknologi</a><a href="#technologies" class="nav-link" data-lang="en">Tech</a></li>
+                    <li><a href="#projects" class="nav-link" data-lang="id">Proyek</a><a href="#projects" class="nav-link" data-lang="en">Projects</a></li>
+                    <li><a href="#contact" class="nav-link" data-lang="id">Kontak</a><a href="#contact" class="nav-link" data-lang="en">Contact</a></li>
                 </ul>
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
                     <span></span>
@@ -1506,14 +1506,22 @@
         // Language Switcher
         let currentLang = 'id';
 
-        function switchLang(lang) {
+        function switchLang(lang, btnElement) {
             currentLang = lang;
             
             // Update buttons
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // Update active button
+            if (btnElement) {
+                btnElement.classList.add('active');
+            } else {
+                // If called programmatically
+                const targetBtn = document.getElementById('btn-' + lang);
+                if (targetBtn) targetBtn.classList.add('active');
+            }
             
             // Update content visibility
             document.querySelectorAll('[data-lang]').forEach(el => {
@@ -1524,6 +1532,15 @@
                 }
             });
             
+            // Update nav links active state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.dataset.lang === lang) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+            
             // Update HTML lang attribute
             document.documentElement.lang = lang;
             
@@ -1531,15 +1548,11 @@
             localStorage.setItem('preferred-lang', lang);
         }
 
-        // Load saved language preference
-        const savedLang = localStorage.getItem('preferred-lang') || 'id';
-        if (savedLang === 'en') {
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                if (btn.textContent === 'EN') btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-            switchLang('en');
-        }
+        // Initialize language on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('preferred-lang') || 'id';
+            switchLang(savedLang, null);
+        });
 
         // Typing Animation
         const typingTexts = {
@@ -1605,10 +1618,10 @@
                 const sectionHeight = section.offsetHeight;
                 const sectionTop = section.offsetTop - 100;
                 const sectionId = section.getAttribute('id');
-                const navLink = document.querySelector(`.nav-links a[href="#${sectionId}"]`);
+                const navLink = document.querySelector(`.nav-link[href="#${sectionId}"][data-lang="${currentLang}"]`);
 
                 if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                    document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
                     if (navLink) navLink.classList.add('active');
                 }
             });
